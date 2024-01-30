@@ -48,11 +48,9 @@ Any value returned is ignored.
 [options : Object] = A JavaScript object with optional data properties; see API documentation for details.
 */
 
-let gridX = 5;
-let gridY = 5;
 
-let colorX = Math.floor(Math.random() * gridX);
-let colorY = Math.floor(Math.random() * gridY);
+let colorX;
+let colorY;
 
 PS.init = function( system, options ) {
 	// Uncomment the following code line
@@ -70,17 +68,27 @@ PS.init = function( system, options ) {
 	// Uncomment the following code line and change
 	// the x and y parameters as needed.
 
-	//PS.gridSize( gridX, gridY );
+	PS.gridSize( 6, 6 );
+	let color = randomColor();
+	colorX = Math.floor(Math.random() * 6)
+	colorY = Math.floor(Math.random() * 6)
 
-	PS.statusInput("Enter grid size to start game", function(int){
+	for(let i=0; i < 7; i++){
+		PS.color(Math.floor(Math.random() * 6), Math.floor(Math.random() * 6), PS.COLOR_RED);
+	}
+	PS.color(colorX, colorY, color);
+
+	PS.statusInput("1 Digit Map Size", function(int){
 		let finalInt = parseInt(int);
 		PS.gridSize( finalInt, finalInt );
 		let color = randomColor();
 
-		PS.color(colorX, colorY, color);
 		for(let i=0; i < 7; i++){
-			PS.color(Math.floor(Math.random() * gridX), Math.floor(Math.random() * gridY), PS.COLOR_RED);
+			PS.color(Math.floor(Math.random() * finalInt), Math.floor(Math.random() * finalInt), PS.COLOR_RED);
 		}
+		colorX = Math.floor(Math.random() * finalInt)
+		colorY = Math.floor(Math.random() * finalInt)
+		PS.color(colorX, colorY, color);
 
 		PS.statusText( "Clear the Reds" );
 
@@ -94,6 +102,11 @@ PS.init = function( system, options ) {
 	//PS.statusText( "Whack the Color" );
 
 	// Add any other initialization code you need here.
+
+	// load audio
+	PS.audioLoad( "fx_uhoh" );
+	PS.audioLoad( "fx_bloink" );
+	
 
 	
 };
@@ -116,18 +129,39 @@ PS.touch = function( x, y, data, options ) {
 
 	// Add code here for mouse clicks/touches
 	// over a bead.
-
-	let newColorX = Math.floor(Math.random() * gridX);
-	let newColorY = Math.floor(Math.random() * gridY);
+	let gridSize = PS.gridSize();
+	let newColorX = Math.floor(Math.random() * gridSize.width);
+	let newColorY = Math.floor(Math.random() * gridSize.height);
 	let color = randomColor();
 
 	if(colorX == x && colorY == y){
 		PS.color(x, y, PS.COLOR_WHITE);
+
+		if((y+1) < PS.gridSize().height){
+			PS.color(x, y+1, PS.COLOR_WHITE);
+		}
+		if((x+1) < PS.gridSize().width){
+			PS.color(x+1, y, PS.COLOR_WHITE);
+		}
+		if((y-1) >= 0){
+			PS.color(x, y-1, PS.COLOR_WHITE);
+			
+		}
+		if((x-1) >= 0){
+			PS.color(x-1, y, PS.COLOR_WHITE);
+			
+		}
 		PS.color(newColorX, newColorY, color);
 		colorX = newColorX;
 		colorY = newColorY;
+
+		PS.audioPlay( "fx_bloink" );
+
 	}else if(colorX != x && colorY != y){
 		PS.color(newColorX, newColorY, PS.COLOR_RED);
+
+		PS.audioPlay( "fx_uhoh" );
+
 	}
 	
 };
