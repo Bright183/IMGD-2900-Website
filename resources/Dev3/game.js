@@ -78,7 +78,7 @@ PS.init = function( system, options ) {
 	}
 	PS.color(colorX, colorY, color);
 
-	PS.statusInput("Enter grid size to start game", function(int){
+	PS.statusInput("1 Digit Map Size", function(int){
 		let finalInt = parseInt(int);
 		PS.gridSize( finalInt, finalInt );
 		let color = randomColor();
@@ -90,7 +90,8 @@ PS.init = function( system, options ) {
 		colorY = Math.floor(Math.random() * finalInt)
 		PS.color(colorX, colorY, color);
 
-    PS.statusText( "Clear the Reds" );
+		PS.statusText( "Clear the Reds" );
+
 	})
 	// This is also a good place to display
 	// your game title or a welcome message
@@ -101,6 +102,11 @@ PS.init = function( system, options ) {
 	//PS.statusText( "Whack the Color" );
 
 	// Add any other initialization code you need here.
+
+	// load audio
+	PS.audioLoad( "fx_uhoh" );
+	PS.audioLoad( "fx_bloink" );
+	
 
 	
 };
@@ -130,11 +136,32 @@ PS.touch = function( x, y, data, options ) {
 
 	if(colorX == x && colorY == y){
 		PS.color(x, y, PS.COLOR_WHITE);
+
+		if((y+1) < PS.gridSize().height){
+			PS.color(x, y+1, PS.COLOR_WHITE);
+		}
+		if((x+1) < PS.gridSize().width){
+			PS.color(x+1, y, PS.COLOR_WHITE);
+		}
+		if((y-1) >= 0){
+			PS.color(x, y-1, PS.COLOR_WHITE);
+			
+		}
+		if((x-1) >= 0){
+			PS.color(x-1, y, PS.COLOR_WHITE);
+			
+		}
 		PS.color(newColorX, newColorY, color);
 		colorX = newColorX;
 		colorY = newColorY;
+
+		PS.audioPlay( "fx_bloink" );
+
 	}else if(colorX != x && colorY != y){
 		PS.color(newColorX, newColorY, PS.COLOR_RED);
+
+		PS.audioPlay( "fx_uhoh" );
+
 	}
 	
 };
