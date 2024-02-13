@@ -49,8 +49,17 @@ Any value returned is ignored.
 */
 
 
-let colorX;
-let colorY;
+let treasureX;
+let treasureY;
+
+//Array of Traps with their x and y
+let traps = [];
+
+let gameOver;
+let youWin;
+let goToNextLevel;
+let levelFourClicksLeft;
+let level = 1;
 
 PS.init = function( system, options ) {
 	// Uncomment the following code line
@@ -67,64 +76,119 @@ PS.init = function( system, options ) {
 	// default dimensions (8 x 8).
 	// Uncomment the following code line and change
 	// the x and y parameters as needed.
+	gameOver = false;
+	youWin = false;
+	goToNextLevel = false;
+	levelFourClicksLeft = 10;
 
-	PS.gridSize( 6, 6 );
-	let color = randomColor();
-	colorX = Math.floor(Math.random() * 6)
-	colorY = Math.floor(Math.random() * 6)
-
-	for(let i=0; i < 7; i++){
-		PS.color(Math.floor(Math.random() * 6), Math.floor(Math.random() * 6), PS.COLOR_RED);
+	if(level == 1){
+		PS.gridSize( 16, 16 );
+		PS.statusText( "Find the Treasure: Level 1" );
+		initializeLevel(16, 2, 3);
 	}
-	PS.color(colorX, colorY, color);
+	if(level == 2){
+		PS.gridSize( 24, 24 );
+		PS.statusText( "Find the Treasure: Level 2" );
+		initializeLevel(24, 10, 15);
+	}
+	if(level == 3){
+		PS.gridSize( 32, 32 );
+		PS.statusText( "Find the Treasure: Level 3" );
+		initializeLevel(32, 20, 30);
+	}
+	if(level == 4){
+		PS.gridSize( 32, 32 );
+		PS.statusText( "Level 4: 10 Moves Left" );
+		initializeLevel(32, 25, 35);
+	}
 
-	PS.statusInput("1 Digit Map Size", function(int){
-		if(int <= 30){
-			initialization(int);
-		}else{
-			PS.gridSize( 6, 6 );
-			let color = randomColor();
-			colorX = Math.floor(Math.random() * 6)
-			colorY = Math.floor(Math.random() * 6)
-		
-			for(let i=0; i < 7; i++){
-				PS.color(Math.floor(Math.random() * 6), Math.floor(Math.random() * 6), PS.COLOR_RED);
-			}
-			PS.color(colorX, colorY, color);
-			PS.statusText( "Too Large" );
-		}
-	})
+
 	// This is also a good place to display
 	// your game title or a welcome message
 	// in the status line above the grid.
 	// Uncomment the following code line and
 	// change the string parameter as needed.
 
-	//PS.statusText( "Whack the Color" );
-
 	// Add any other initialization code you need here.
 
 	// load audio
 	PS.audioLoad( "fx_uhoh" );
-	PS.audioLoad( "fx_bloink" );
+	PS.audioLoad( "fx_tada" );
+	PS.audioLoad( "fx_wilhelm" );
 	
-
 	
 };
 
-function initialization(int){
-	let finalInt = parseInt(int);
-	PS.gridSize( finalInt, finalInt );
-	let color = randomColor();
+function initializeLevel(size, randomMin, randomMax){
+	PS.gridColor( { rgb : 0x000000 } );
+	
+	PS.statusColor(PS.COLOR_GREEN);
 
-	for(let i=0; i < 7; i++){
-		PS.color(Math.floor(Math.random() * finalInt), Math.floor(Math.random() * finalInt), PS.COLOR_RED);
+
+	//Location of the treasure
+	treasureX = Math.floor(Math.random() * size);
+	treasureY = Math.floor(Math.random() * size);
+
+	//For testing get rid afterwards
+	//PS.color(treasureX, treasureY, PS.COLOR_YELLOW);
+
+	let numOfTraps = getRandomArbitraryNum(randomMin, randomMax);
+
+	//For loop to create traps
+	for(let i=0; i<numOfTraps; i++){
+		//Creates traps and makes sure that cannot be near treause
+		traps[i] = generateTrapLocation(treasureX, treasureY);
 	}
-	colorX = Math.floor(Math.random() * finalInt)
-	colorY = Math.floor(Math.random() * finalInt)
-	PS.color(colorX, colorY, color);
+}
 
-	PS.statusText( "Clear the Reds" );
+
+//Gets random num with min and max
+function getRandomArbitraryNum(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+//Generates an array for a trap location
+function generateTrapLocation(givenX, givenY){
+
+	let trapX = Math.floor(Math.random() * 32);
+	let trapY = Math.floor(Math.random() * 32);
+
+	if(trapValid(trapX, trapY, givenX, givenY) == false){
+		return generateTrapLocation();
+	}
+
+	//Temp for testing
+	//PS.color(trapX, trapY, PS.COLOR_RED);
+	return [trapX, trapY];
+	
+}
+
+//Checks if the trap location is valid
+function trapValid(trapX, trapY, givenX, givenY){
+	let minDistance = 3;
+	if((trapX == givenX && trapY == givenY) ||
+	((trapX <= (givenX + minDistance)) && (trapX >= (givenX - minDistance))) ||
+	((trapY <= (givenY + minDistance)) && (trapY >= (givenY - minDistance)))){
+		return false;
+	}
+}
+
+
+function distanceFromTreasure(givenX, givenY){
+    let closeDistance = 8;
+    let mediumDistance = 18;
+    let farDistance = 32;
+    let distance = Math.abs(treasureX - givenX) + Math.abs(treasureY - givenY);
+
+    if (distance <= closeDistance) {
+        return 1;
+    } else if (distance <= mediumDistance) {
+        return 2;
+    } else if (distance <= farDistance) {
+        return 3;
+    } else {
+        return 0; 
+    }
 }
 
 /*
@@ -145,69 +209,156 @@ PS.touch = function( x, y, data, options ) {
 
 	// Add code here for mouse clicks/touches
 	// over a bead.
-	let gridSize = PS.gridSize();
-	let newColorX = Math.floor(Math.random() * gridSize.width);
-	let newColorY = Math.floor(Math.random() * gridSize.height);
-	let color = randomColor();
 
-	if(colorX == x && colorY == y){
-		PS.color(x, y, PS.COLOR_WHITE);
 
-		if((y+1) < PS.gridSize().height){
-			PS.color(x, y+1, PS.COLOR_WHITE);
+    //Change color of clicked bead based on distance from the treasure
+    changeColorWithDistance(x, y);
+
+    //Change color of surrounding beads based on distance from the treasure
+    for (let i = x - 1; i <= x + 1; i++) {
+        for (let j = y - 1; j <= y + 1; j++) {
+            //Exclude the clicked bead
+            if (i !== x || j !== y) {
+                //Check if the bead is within the grid boundaries
+                if (i >= 0 && i < PS.gridSize().width && j >= 0 && j < PS.gridSize().height) {
+					changeColorWithDistance(i, j); 
+                }
+            }
+        }
+    }
+
+
+	//Win if you click the treasure
+	if(x === treasureX && y === treasureY){
+		PS.statusColor(PS.COLOR_YELLOW);
+		PS.color(treasureX, treasureY, PS.COLOR_YELLOW);
+		PS.audioPlay( "fx_tada" );
+		PS.active ( PS.ALL, PS.ALL, false );
+		if(level == 4){
+			PS.statusText( "You Win! Press Enter to Restart" );
+			gameOver = true;
+			youWin = true;
+		}else{
+			if(level == 1){
+				level = 2;
+				PS.statusText( "Press Enter to go to Next Level" );
+				goToNextLevel = true;
+			}else if(level == 2){
+				level = 3;
+				PS.statusText( "Press Enter to go to Next Level" );
+				goToNextLevel = true;
+			}else if(level == 3 && !goToNextLevel){
+				level = 4;
+				PS.statusText( "Press Enter to go to Next Level" );
+				goToNextLevel = true;
+			}
 		}
-		if((x+1) < PS.gridSize().width){
-			PS.color(x+1, y, PS.COLOR_WHITE);
-		}
-		if((y-1) >= 0){
-			PS.color(x, y-1, PS.COLOR_WHITE);
-			
-		}
-		if((x-1) >= 0){
-			PS.color(x-1, y, PS.COLOR_WHITE);
-			
-		}
-		PS.color(newColorX, newColorY, color);
-		colorX = newColorX;
-		colorY = newColorY;
-
-		PS.audioPlay( "fx_bloink" );
-
-	}else if(colorX != x && colorY != y){
-		PS.color(newColorX, newColorY, PS.COLOR_RED);
-
-		PS.audioPlay( "fx_uhoh" );
-
 	}
+
+	for(let i=0; i<traps.length; i++){
+		//Clicked on trap (Lose)
+		if(triggeredTrap(traps[i], x, y) == true){
+			PS.statusColor(PS.COLOR_RED);
+			PS.statusText( "You Lose! Press Enter to Restart" );
+			PS.color(x, y, PS.COLOR_RED);
+			PS.audioPlay( "fx_uhoh" );
+			PS.active ( PS.ALL, PS.ALL, false );
+			gameOver = true;
+		}
+	}
+
+	if(levelFourClicksLeft == 1 && !youWin){
+		PS.statusColor(PS.COLOR_RED);
+		PS.statusText( "You Lose! Press Enter to Restart" );
+		PS.audioPlay( "fx_wilhelm" );
+		PS.active ( PS.ALL, PS.ALL, false );
+		gameOver = true;
+	}
+
+	if(level == 4 && levelFourClicksLeft != 1 && !goToNextLevel && !youWin){
+		levelFourClicksLeft--;
+		PS.statusText("Level 4: " + (levelFourClicksLeft) + " Moves Left");
+	}
+
+
 	
 };
 
-/*
-Chooses random color
-*/
-function randomColor(){
-	let finalColor;
-	let randomNum = Math.floor(Math.random() * 5);
-	switch(randomNum){
-		case 0:
-			finalColor = PS.COLOR_GREEN;
-			break;
-		case 1:
-			finalColor = PS.COLOR_BLUE;
-			break;
-		case 2:
-			finalColor = PS.COLOR_YELLOW;
-			break;
-		case 3:
-			finalColor = PS.COLOR_ORANGE;
-			break;
-		case 4:
-			finalColor = PS.COLOR_RED;
-			break;
-			
+
+//Checks if you clicked a trap
+function triggeredTrap(trapLocation, clickedX, clickedY){
+	if(trapLocation[0] == clickedX && trapLocation[1] == clickedY){
+		return true;
+	}else{
+		return false;
 	}
-	return finalColor;
-};
+}
+
+
+//Change color of a bead based on distance from the treasure
+function changeColorWithDistance(givenX, givenY) {
+
+	//Check if the bead is a treasure or a trap
+	if ((givenX === treasureX && givenY === treasureY)) {
+		//PS.color(givenX, givenY, PS.YELLOW);
+		return;
+	}
+
+	//Check if the bead is a trap
+    for (let i = 0; i < traps.length; i++) {
+        if (traps[i][0] === givenX && traps[i][1] === givenY) {
+            //PS.color(givenX, givenY, PS.COLOR_RED);
+			return;
+        }
+    }
+
+    // Calculate distance from the clicked bead to the treasure
+    let distance = Math.sqrt(Math.pow(givenX - treasureX, 2) + Math.pow(givenY - treasureY, 2));
+    // Set color based on distance
+    let color;
+	if (distance <= 2) {
+        color = PS.COLOR_GREEN;
+    }else if (distance <= 12) {
+        color = PS.COLOR_BLUE;
+    }else if (distance <= 20) {
+        color = PS.COLOR_VIOLET;
+    }else{
+		color = 100,69,19;
+	}
+    PS.color(givenX, givenY, color);
+
+	for(let i = 0; i < traps.length; i++){
+		if ((traps[i][0] + 1 === givenX && traps[i][1] + 1 === givenY) ||
+			(traps[i][0] - 1 === givenX && traps[i][1] - 1 === givenY) ||	
+			(traps[i][0] + 1 === givenX && traps[i][1] - 1 === givenY) ||
+			(traps[i][0] - 1 === givenX && traps[i][1] + 1 === givenY) ||
+			(traps[i][0] + 1 === givenX && traps[i][1] === givenY) ||
+			(traps[i][0] - 1 === givenX && traps[i][1] === givenY) ||
+			(traps[i][0] === givenX && traps[i][1] + 1 === givenY) ||
+			(traps[i][0] === givenX && traps[i][1] - 1 === givenY)) {
+            PS.color(givenX, givenY, 250, 95, 85);
+			return;
+        }
+		
+	}
+
+	//Check if the bead is a treasure or a trap
+	if ((givenX === treasureX && givenY === treasureY)) {
+		//PS.color(givenX, givenY, PS.YELLOW);
+		return;
+	}
+
+	//Check if the bead is a trap
+    for (let i = 0; i < traps.length; i++) {
+        if (traps[i][0] === givenX && traps[i][1] === givenY) {
+            //PS.color(givenX, givenY, PS.COLOR_RED);
+			return;
+        }
+    }
+
+
+}
+
 
 /*
 PS.release ( x, y, data, options )
@@ -294,6 +445,15 @@ PS.keyDown = function( key, shift, ctrl, options ) {
 	// PS.debug( "PS.keyDown(): key=" + key + ", shift=" + shift + ", ctrl=" + ctrl + "\n" );
 
 	// Add code here for when a key is pressed.
+	if(youWin && gameOver && key == PS.KEY_ENTER){
+		level = 1;
+		PS.init();
+	}else if(gameOver && key == PS.KEY_ENTER){
+		PS.init();
+	}else if(goToNextLevel && !gameOver && key == PS.KEY_ENTER){
+		PS.init();
+	}
+
 };
 
 /*

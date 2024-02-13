@@ -72,7 +72,7 @@ PS.init = function( system, options ) {
 	// Uncomment the following code line and change
 	// the x and y parameters as needed.
 
-	PS.gridSize( 32, 32 );
+	PS.gridSize( 16, 16 );
 
 	PS.gridColor( { rgb : 0x000000 } );
 
