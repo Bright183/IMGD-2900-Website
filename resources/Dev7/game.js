@@ -61,6 +61,7 @@ let colorG1;
 let colorG2;
 let colorG3;
 let colorG4;
+let gameOver;
 
 PS.init = function( system, options ) {
 	// Uncomment the following code line
@@ -79,6 +80,8 @@ PS.init = function( system, options ) {
 	// the x and y parameters as needed.
 
 	gridSize = PS.gridSize( 32, 32 );
+
+	gameOver = false;
 
 	worldColor = [89, 238, 130];
 	colorG1 = PS.random(255);
@@ -120,9 +123,9 @@ PS.init = function( system, options ) {
 
 
 	// load audio
-	PS.audioLoad( "fx_uhoh" );
+	PS.audioLoad( "fx_bang" );
 	PS.audioLoad( "fx_tada" );
-	PS.audioLoad( "fx_wilhelm" );
+	PS.audioLoad( "fx_squawk" );
 
 
 	
@@ -131,7 +134,7 @@ PS.init = function( system, options ) {
 
 
 function makePond(x, y){
-	PS.color(x, y, PS.COLOR_BLACK);
+	PS.color(x, y, PS.COLOR_BLUE);
 	PS.color(x+1, y, PS.COLOR_BLUE);
 	PS.color(x-1, y, PS.COLOR_BLUE);
 	PS.color(x, y+1, PS.COLOR_BLUE);
@@ -494,12 +497,20 @@ function checkHit(){
 			PS.statusText("You Lose!");
 			drawGameOverCars();
 			drawExplosion(cars[i][0], cars[i][1]);
+			if(!gameOver){
+				PS.audioPlay( "fx_bang", { volume: 0.5 } );
+				gameOver = true;
+			}
 			PS.active ( PS.ALL, PS.ALL, false );
 		}
 	}
 	if(chickenLocation[0] > 13 && chickenLocation[0] < 20 && chickenLocation[1] < 5){
 		drawGameOverCars();
 		PS.statusText("You got to the pond!");
+		if(!gameOver){
+			PS.audioPlay( "fx_tada" );
+			gameOver = true;
+		}
 		PS.active ( PS.ALL, PS.ALL, false );
 	}
 
@@ -662,21 +673,25 @@ PS.keyDown = function( key, shift, ctrl, options ) {
 		if(chickenLocation[1]-1 > 0){
 			deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 			createChicken(chickenLocation[0], chickenLocation[1]-1);
+			PS.audioPlay( "fx_squawk" );
 		}
 	}else if(key == PS.KEY_ARROW_DOWN || key == 115 || key == 83){
 		if(chickenLocation[1]+1 < gridSize.height-1 ){
 			deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 			createChicken(chickenLocation[0], chickenLocation[1]+1);
+			PS.audioPlay( "fx_squawk" );
 		}
 	}else if(key == PS.KEY_ARROW_LEFT || key == 97 || key == 65){
 		if(chickenLocation[0]-2 > 0 ){
 			deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 			createChicken(chickenLocation[0]-1, chickenLocation[1]);
+			PS.audioPlay( "fx_squawk" );
 		}
 	}else if(key == PS.KEY_ARROW_RIGHT || key == 100 || key == 68){
 		if(chickenLocation[0]+1 < gridSize.width-1 ){
 			deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 			createChicken(chickenLocation[0]+1, chickenLocation[1]);
+			PS.audioPlay( "fx_squawk" );
 		}
 	}
 
@@ -730,11 +745,13 @@ PS.input = function( sensors, options ) {
 			if(chickenLocation[1]-1 > 0){
 				deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 				createChicken(chickenLocation[0], chickenLocation[1]-1);
+				PS.audioPlay( "fx_squawk" );
 			}
 		}else if(event === PS.WHEEL_BACKWARD){
 			if(chickenLocation[1]+1 < gridSize.height-1 ){
 				deletePreviousChicken(chickenLocation[0], chickenLocation[1]);
 				createChicken(chickenLocation[0], chickenLocation[1]+1);
+				PS.audioPlay( "fx_squawk" );
 			}
 		}
 	}
