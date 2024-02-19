@@ -498,7 +498,7 @@ function checkHit(){
 			drawGameOverCars();
 			drawExplosion(cars[i][0], cars[i][1]);
 			if(!gameOver){
-				PS.audioPlay( "fx_bang", { volume: 0.5 } );
+				PS.audioPlay( "fx_bang", { volume: 1 } );
 				gameOver = true;
 			}
 			PS.active ( PS.ALL, PS.ALL, false );
