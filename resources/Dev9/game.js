@@ -67,6 +67,8 @@ let gameOver;
 let level = 1;
 let level1Finished = true;
 let level2Finished = true;
+let level3Finished = true;
+let atPond = false;
 
 PS.init = function (system, options) {
 	// Uncomment the following code line
@@ -98,6 +100,7 @@ PS.init = function (system, options) {
 		carLocationLeft3 = [];
 
 		gameOver = false;
+
 
 		PS.statusText("Level 1: Press Enter to Restart");
 
@@ -133,6 +136,9 @@ PS.init = function (system, options) {
 		createCar(0, roadLocations[1] + 2, true, 3, colorG3); // Right
 		createCar(gridSize.width + 2, roadLocations[1] - 2, false, 4, colorG4); // Left
 
+		level1Finished = true;
+		atPond = false;
+
 	} else if (level == 2) {
 		chickenLocation = [];
 		roadLocations = [];
@@ -143,7 +149,7 @@ PS.init = function (system, options) {
 		carLocationLeft2 = [];
 		carLocationRight3 = [];
 		carLocationLeft3 = [];
-				cars[4] = carLocationRight3;
+		cars[4] = carLocationRight3;
 		cars[5] = carLocationLeft3;
 
 		gameOver = false;
@@ -181,6 +187,8 @@ PS.init = function (system, options) {
 		createCar(0, roadLocations[1] + 2, true, 3, colorG3); // Right
 		createCar(gridSize.width + 2, roadLocations[1] - 2, false, 4, colorG4); // Left
 
+		atPond = false;
+
 	} else if (level == 3) {
 		chickenLocation = [];
 		roadLocations = [];
@@ -193,6 +201,7 @@ PS.init = function (system, options) {
 		carLocationLeft3 = [];
 
 		gameOver = false;
+
 
 		PS.statusText("Level 3: Press Enter to Restart");
 
@@ -229,6 +238,8 @@ PS.init = function (system, options) {
 		createCar(gridSize.width + 2, roadLocations[1] - 2, false, 2, colorG4); // Left
 		createCar(0, roadLocations[2] + 2, true, 5, colorG3); // Right
 		createCar(gridSize.width + 2, roadLocations[2] - 2, false, 6, colorG4); // Left
+
+		atPond = false;
 	}
 
 
@@ -680,17 +691,23 @@ function checkHit() {
 		if (!gameOver) {
 			PS.audioPlay("fx_tada", {
 				onEnd: () => {
-					if(level == 1 && level1Finished){
+					if(level == 1 && level1Finished && !atPond){
 						level = 2;
 						level1Finished = false;
+						atPond = true;
 						PS.init();
-					}else if(level == 2 && level2Finished){
+					}else if(level == 2 && level2Finished && !atPond){
 						level = 3;
 						level2Finished = false;
+						atPond = true;
 						PS.init();
 					}
 				}
 			});
+			if(level == 3 && level3Finished && !atPond){
+				level3Finished = false;
+				atPond = true;
+			}
 			gameOver = true;
 			PS.active(PS.ALL, PS.ALL, false);
 		}
@@ -850,10 +867,18 @@ PS.keyDown = function (key, shift, ctrl, options) {
 
 	// PS.debug( "PS.keyDown(): key=" + key + ", shift=" + shift + ", ctrl=" + ctrl + "\n" );
 	if(key == PS.KEY_ENTER){
-		if(level == 3){
+		if(level == 3 && !level3Finished){
 			level = 1;
+			level3Finished = true;
+		}else if(level == 1){
+			PS.init();
+			level2Finished = true;
+		}else if(level == 2){
+			level2Finished = true;
+			PS.init();
+		}else if(level == 3){
+			PS.init();
 		}
-		PS.init();
 	}
 
 
